@@ -118,6 +118,8 @@ Endpoint = <SERVER_IP>:<SERVER_PORT>
 `PublicKey` is the public key of your SERVER  
 `Endpoint` is the IP and PORT of your SERVER
 
+`DNS` if you are using [pi-hole](https://github.com/m1rkwood/pihole-docker), put 10.0.0.1 as your DNS instead of `1.1.1.1` (Cloudflare).
+
 ## Add your key to the server
 
 Go to your server and run this command, using the public key generated in Wireguard on your computer (this will be remove when you reboot the server)
