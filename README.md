@@ -110,29 +110,26 @@ Address = 10.0.0.2/24
 DNS = 1.1.1.1
 
 [Peer]
-PublicKey =
+PublicKey = <SERVER_PUBLIC_KEY>
 AllowedIPs = 0.0.0.0/0, ::/0
 Endpoint = <SERVER_IP>:<SERVER_PORT>
 ```
 
-`PublicKey` is the public key of your SERVER  
-`Endpoint` is the IP and PORT of your SERVER
-
-`DNS` if you are using [pi-hole](https://github.com/m1rkwood/pihole-docker), put 10.0.0.1 as your DNS instead of `1.1.1.1` (Cloudflare).
+`DNS` if you are using [pi-hole](https://github.com/m1rkwood/pihole-docker) or [adguard](https://github.com/m1rkwood/adguard-docker), put 10.0.0.1 as your DNS instead of `1.1.1.1` (Cloudflare).
 
 ## Add your key to the server
 
 Go to your server and run this command, using the public key generated in Wireguard on your computer (this will be remove when you reboot the server)
 
 ```
-wg set wg0 peer <YOUR_PUBLIC_KEY> allowed-ips 10.0.0.2
+wg set wg0 peer <COMPUTER_PUBLIC_KEY> allowed-ips 10.0.0.2
 ```
 
 As an alternative, you can edit `/etc/wireguard/wg0.conf` and add these lines so that it stays permanent
 
 ```
 [Peer]
-PublicKey = <YOUR_PUBLIC_KEY>
+PublicKey = <COMPUTER_PUBLIC_KEY>
 AllowedIPs = 10.0.0.2/32
 ```
 
@@ -145,10 +142,55 @@ Go back to Wireguard on your computer and choose `Activate` to start the VPN.
 
 (You can also type `wg` on the server to see your peer added)
 
-## Remove a key from the server
+# Remove a key from the server
 
 To find the IDs of the peers, just type `wg`
 
 ```
 wg set wg0 peer <KEY_TO_REMOVE> remove
 ```
+
+# Setup Wireguard on iOS
+
+## Generate a pair of keys for your device
+It's easier to generate the keys on the server. We will use a QR Code to transfer the configuration to your device.
+
+Go to the Wireguard folder on the server
+```
+cd /etc/wireguard
+```
+Generate a pair of keys
+```
+wg genkey | tee ios-privatekey | wg pubkey > ios-publickey
+```
+## Add the public key to the server
+Same step as for the Computer setup, don't forget to increment the IP for `Address`.
+
+## Create a configuration for your device
+Still on the server (i.e. `/etc/wireguard`), we will generate a configuration file that will be sent to your device as a QR Code:
+```
+vim ios.conf
+```
+
+```
+[Interface]
+PrivateKey = <IOS_PRIVATE_KEY>
+Address = 10.0.0.2/24
+DNS = 1.1.1.1
+
+[Peer]
+PublicKey = <SERVER_PUBLIC_KEY>
+AllowedIPs = 0.0.0.0/0, ::/0
+Endpoint = <SERVER_IP>:<SERVER_PORT>
+```
+
+`DNS` if you are using [pi-hole](https://github.com/m1rkwood/pihole-docker) or [adguard](https://github.com/m1rkwood/adguard-docker), put 10.0.0.1 as your DNS instead of `1.1.1.1` (Cloudflare).
+
+## Generate a QR code
+```
+apt install qrencode
+```
+```
+qrencode -t ansiutf8 < /etc/wireguard/ios.conf
+```
+Simply scan the code generated with the Wireguard iOS App and you're done!
